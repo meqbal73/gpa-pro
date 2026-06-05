@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GPA Calculator (Out of 5)</title>
+
+<style>
+body{
+    font-family: Arial, sans-serif;
+    max-width: 800px;
+    margin: 30px auto;
+    padding: 20px;
+    background:#f5f5f5;
+}
+
+.container{
+    background:white;
+    padding:20px;
+    border-radius:10px;
+    box-shadow:0 0 10px rgba(0,0,0,.1);
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+th,td{
+    padding:10px;
+    border:1px solid #ddd;
+}
+
+button{
+    padding:10px 15px;
+    margin-top:10px;
+    cursor:pointer;
+}
+
+.result{
+    margin-top:20px;
+    font-size:24px;
+    font-weight:bold;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+<h2>GPA Calculator (Out of 5)</h2>
+
+<table id="subjects">
+<tr>
+<th>Credit Hours</th>
+<th>Grade Point</th>
+</tr>
+
+<tr>
+<td><input type="number" min="1" value="3"></td>
+<td><input type="number" min="0" max="5" step="0.01" value="4"></td>
+</tr>
+</table>
+
+<button onclick="addRow()">Add Subject</button>
+<button onclick="calculateGPA()">Calculate GPA</button>
+
+<div class="result" id="result"></div>
+</div>
+
+<script>
+function addRow(){
+    const table = document.getElementById("subjects");
+
+    const row = table.insertRow();
+
+    row.innerHTML = `
+    <td><input type="number" min="1" value="3"></td>
+    <td><input type="number" min="0" max="5" step="0.01" value="4"></td>
+    `;
+}
+
+function calculateGPA(){
+    const rows = document.querySelectorAll("#subjects tr");
+
+    let totalPoints = 0;
+    let totalHours = 0;
+
+    for(let i=1;i<rows.length;i++){
+        const hours = parseFloat(rows[i].cells[0].querySelector("input").value);
+        const grade = parseFloat(rows[i].cells[1].querySelector("input").value);
+
+        totalPoints += hours * grade;
+        totalHours += hours;
+    }
+
+    const gpa = totalHours ? (totalPoints / totalHours).toFixed(2) : 0;
+
+    document.getElementById("result").innerHTML =
+        `Your GPA: ${gpa} / 5.00`;
+}
+</script>
+
+</body>
+</html>
