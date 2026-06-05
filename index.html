@@ -3,102 +3,103 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GPA Calculator (Out of 5)</title>
-
+<title>GPA Pro</title>
 <style>
-body{
-    font-family: Arial, sans-serif;
-    max-width: 800px;
-    margin: 30px auto;
-    padding: 20px;
-    background:#f5f5f5;
-}
-
-.container{
-    background:white;
-    padding:20px;
-    border-radius:10px;
-    box-shadow:0 0 10px rgba(0,0,0,.1);
-}
-
-table{
-    width:100%;
-    border-collapse:collapse;
-}
-
-th,td{
-    padding:10px;
-    border:1px solid #ddd;
-}
-
-button{
-    padding:10px 15px;
-    margin-top:10px;
-    cursor:pointer;
-}
-
-.result{
-    margin-top:20px;
-    font-size:24px;
-    font-weight:bold;
-}
+body{font-family:Arial,sans-serif;background:#0f172a;color:#fff;max-width:1000px;margin:auto;padding:20px}
+.card{background:#1e293b;padding:20px;border-radius:12px;margin:10px 0}
+input,select,button{padding:8px;margin:4px}
+table{width:100%;border-collapse:collapse}
+td,th{border:1px solid #334155;padding:8px}
+button{cursor:pointer}
 </style>
 </head>
 <body>
+<h1>GPA Pro (5.0 Scale)</h1>
 
-<div class="container">
-<h2>GPA Calculator (Out of 5)</h2>
-
-<table id="subjects">
-<tr>
-<th>Credit Hours</th>
-<th>Grade Point</th>
-</tr>
-
-<tr>
-<td><input type="number" min="1" value="3"></td>
-<td><input type="number" min="0" max="5" step="0.01" value="4"></td>
-</tr>
-</table>
-
-<button onclick="addRow()">Add Subject</button>
-<button onclick="calculateGPA()">Calculate GPA</button>
-
-<div class="result" id="result"></div>
+<div class="card">
+<h3>Current CGPA</h3>
+<input id="currentGpa" type="number" step="0.01" placeholder="Current GPA">
+<input id="earnedHours" type="number" placeholder="Earned Hours">
 </div>
 
+<div class="card">
+<h3>Subjects</h3>
+<table id="tbl">
+<tr><th>Hours</th><th>Grade</th><th></th></tr>
+</table>
+<button onclick="addRow()">Add Subject</button>
+<button onclick="calc()">Calculate</button>
+</div>
+
+<div class="card">
+<h2 id="semester">Semester GPA: 0.00</h2>
+<h2 id="cgpa">New CGPA: 0.00</h2>
+</div>
+
+<canvas id="chart" width="800" height="250"></canvas>
+
 <script>
+const grades={
+"A+":5,"A":4.75,"B+":4.5,"B":4,
+"C+":3.5,"C":3,"D+":2.5,"D":2,"F":1
+};
+
 function addRow(){
-    const table = document.getElementById("subjects");
+const tr=document.createElement('tr');
+tr.innerHTML=`
+<td><input type="number" value="3"></td>
+<td>
+<select>
+<option>A+</option><option>A</option>
+<option>B+</option><option>B</option>
+<option>C+</option><option>C</option>
+<option>D+</option><option>D</option>
+<option>F</option>
+</select>
+</td>
+<td><button onclick="this.parentElement.parentElement.remove()">X</button></td>`;
+document.getElementById('tbl').appendChild(tr);
+save();
+}
+addRow();
 
-    const row = table.insertRow();
+function calc(){
+let points=0,hours=0;
+document.querySelectorAll('#tbl tr').forEach((r,i)=>{
+if(i===0)return;
+const h=parseFloat(r.cells[0].querySelector('input').value)||0;
+const g=grades[r.cells[1].querySelector('select').value];
+points+=h*g;
+hours+=h;
+});
+const sem=hours?points/hours:0;
+document.getElementById('semester').textContent='Semester GPA: '+sem.toFixed(2);
 
-    row.innerHTML = `
-    <td><input type="number" min="1" value="3"></td>
-    <td><input type="number" min="0" max="5" step="0.01" value="4"></td>
-    `;
+const cur=parseFloat(document.getElementById('currentGpa').value)||0;
+const earned=parseFloat(document.getElementById('earnedHours').value)||0;
+
+const newCg=((cur*earned)+points)/(earned+hours||1);
+document.getElementById('cgpa').textContent='New CGPA: '+newCg.toFixed(2);
+
+draw(sem,newCg);
+save();
 }
 
-function calculateGPA(){
-    const rows = document.querySelectorAll("#subjects tr");
-
-    let totalPoints = 0;
-    let totalHours = 0;
-
-    for(let i=1;i<rows.length;i++){
-        const hours = parseFloat(rows[i].cells[0].querySelector("input").value);
-        const grade = parseFloat(rows[i].cells[1].querySelector("input").value);
-
-        totalPoints += hours * grade;
-        totalHours += hours;
-    }
-
-    const gpa = totalHours ? (totalPoints / totalHours).toFixed(2) : 0;
-
-    document.getElementById("result").innerHTML =
-        `Your GPA: ${gpa} / 5.00`;
+function draw(a,b){
+const c=document.getElementById('chart');
+const x=c.getContext('2d');
+x.clearRect(0,0,c.width,c.height);
+x.fillStyle='#ffffff';
+x.fillText('Semester GPA',100,220);
+x.fillText('CGPA',500,220);
+x.fillRect(120,200-a*35,100,a*35);
+x.fillRect(520,200-b*35,100,b*35);
 }
+
+function save(){
+localStorage.setItem('gpapro',document.body.innerHTML);
+}
+
 </script>
-
 </body>
 </html>
